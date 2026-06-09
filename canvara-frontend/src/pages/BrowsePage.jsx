@@ -34,7 +34,6 @@ export default function BrowsePage() {
     if (filters.styles.length) params.set('styles', filters.styles.join(','));
     if (filters.mediums.length) params.set('mediums', filters.mediums.join(','));
     if (filters.sizes.length) params.set('sizes', filters.sizes.join(','));
-    params.set('sort', sort);
     params.set('page', page);
     params.set('size', 20);
     return params.toString();

@@ -1,0 +1,50 @@
+services:
+
+  backend:
+    build:
+      context: ./canvara-backend
+      dockerfile: Dockerfile
+    container_name: canvara-backend
+    ports:
+      - "8080:8080"
+    environment:
+      # Database — point to your external MySQL (RDS, PlanetScale, etc.)
+      SPRING_DATASOURCE_URL: ${DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+
+      # JWT
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+
+      # File uploads
+      UPLOAD_DIR: /app/uploads
+
+      # Spring profile
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+    volumes:
+      # Persist uploaded artwork images locally
+      - artwork_uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./canvara-frontend
+      dockerfile: Dockerfile
+      args:
+        # At build time, frontend proxies /api/* via nginx to backend container
+        # so we use the nginx proxy — no need to expose backend URL to browser
+        VITE_API_BASE_URL: ""
+    container_name: canvara-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  artwork_uploads:
