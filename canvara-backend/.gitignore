@@ -1,4 +1,42 @@
+# Maven build output
 target/
 !.mvn/wrapper/maven-wrapper.properties
 *.jar
 *.war
+*.ear
+*.class
+
+# Maven wrapper (keep the jar if you use it)
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE - IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# IDE - Eclipse / VS Code (just in case)
+.classpath
+.project
+.settings/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Spring Boot
+*.log
+logs/
+spring.log
+
+# Environment / secrets — NEVER commit these
+.env
+.env.*
+application-local.properties
+application-local.yml
+*-secret.properties
+
+# File uploads (local storage)
+uploads/

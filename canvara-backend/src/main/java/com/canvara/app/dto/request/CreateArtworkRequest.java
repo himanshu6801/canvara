@@ -33,4 +33,7 @@ public class CreateArtworkRequest {
 
     @NotBlank(message = "Image filename is required")
     private String imageFilename;   // returned by /api/upload after file is saved
+
+    @NotBlank(message = "Supplier email is required")
+    private String supplierEmail;
 }

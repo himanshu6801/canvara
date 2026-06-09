@@ -6,10 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class ArtworkStatusRequest {
-
-    @NotNull(message = "Status is required")
-    private ArtworkStatus status;
+public class ArtworkDeleteRequest {
 
     @NotBlank(message = "Supplier email is required")
     private String supplierEmail;

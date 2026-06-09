@@ -3,6 +3,7 @@ package com.canvara.app.dto.response;
 import com.canvara.app.enums.ArtworkStatus;
 import com.canvara.app.enums.Category;
 import com.canvara.app.enums.Medium;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Data;
 
@@ -29,10 +30,13 @@ public class ArtworkDetailResponse {
     // Supplier info (public-safe fields only)
     private Long          supplierId;
     private String        supplierName;
+    private String        supplierEmail;
     private String        supplierBio;
     private String        supplierProfileImageUrl;
 
     private int           pendingRequestCount;   // visible to supplier only
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
 }

@@ -39,9 +39,8 @@ public class User {
     @Column(length = 300)
     private String profileImageUrl;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;
+    @Column
+    private String role;
 
     @Column(nullable = false)
     @Builder.Default
@@ -51,11 +50,6 @@ public class User {
     @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Artwork> artworks = new ArrayList<>();
-
-    // One visitor → many purchase requests
-    @OneToMany(mappedBy = "visitor", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<PurchaseRequest> purchaseRequests = new ArrayList<>();
 
     @CreatedDate
     @Column(updatable = false)

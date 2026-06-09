@@ -1,5 +1,6 @@
 package com.canvara.app.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Data;
 
@@ -13,5 +14,6 @@ public class ApiErrorResponse {
     private String              error;
     private String              message;
     private Map<String, String> fieldErrors;   // populated on validation failure
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime       timestamp;
 }

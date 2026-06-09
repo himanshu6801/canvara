@@ -18,14 +18,14 @@ public interface ArtworkRepository extends JpaRepository<Artwork, Long> {
     @Query("""
         SELECT a FROM Artwork a
         JOIN FETCH a.supplier s
-        WHERE a.status = :status
+        WHERE (:status IS NULL OR a.status = :status)
           AND (:category IS NULL OR a.category = :category)
           AND (:keyword IS NULL
                OR LOWER(a.title)        LIKE LOWER(CONCAT('%', :keyword, '%'))
                OR LOWER(s.fullName)     LIKE LOWER(CONCAT('%', :keyword, '%')))
         """)
     Page<Artwork> findAllPublic(
-        @Param("status")   ArtworkStatus status,
+        @Param("status")   String status,
         @Param("category") Category category,
         @Param("keyword")  String keyword,
         Pageable pageable

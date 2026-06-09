@@ -3,6 +3,7 @@ package com.canvara.app.dto.response;
 import com.canvara.app.enums.ArtworkStatus;
 import com.canvara.app.enums.Category;
 import com.canvara.app.enums.Medium;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Data;
 
@@ -25,5 +26,6 @@ public class ArtworkSummaryResponse {
     private String        imageUrl;        // full resolved URL
     private ArtworkStatus status;
     private String        supplierName;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
 }

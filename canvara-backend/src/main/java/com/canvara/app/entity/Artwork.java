@@ -15,11 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "artworks", indexes = {
-    @Index(name = "idx_artwork_status",   columnList = "status"),
-    @Index(name = "idx_artwork_category", columnList = "category"),
-    @Index(name = "idx_artwork_supplier", columnList = "supplier_id")
-})
+@Table(name = "artworks")
 @EntityListeners(AuditingEntityListener.class)
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Artwork {
@@ -37,13 +33,11 @@ public class Artwork {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Medium medium;
+    @Column
+    private String medium;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Category category;
+    @Column
+    private String category;
 
     // e.g. "60 × 80 cm"
     @Column(length = 100)
@@ -53,20 +47,13 @@ public class Artwork {
     @Column(nullable = false, length = 300)
     private String imageFilename;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @Builder.Default
-    private ArtworkStatus status = ArtworkStatus.AVAILABLE;
+    @Column
+    private String status;
 
     // Many artworks → one supplier (User with role=SUPPLIER)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "supplier_id", nullable = false)
     private User supplier;
-
-    // One artwork → many purchase requests
-    @OneToMany(mappedBy = "artwork", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<PurchaseRequest> purchaseRequests = new ArrayList<>();
 
     @CreatedDate
     @Column(updatable = false)

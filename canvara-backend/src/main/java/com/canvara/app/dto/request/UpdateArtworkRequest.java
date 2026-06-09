@@ -30,4 +30,7 @@ public class UpdateArtworkRequest {
 
     @Size(max = 100)
     private String dimensions;
+
+    @NotBlank(message = "Supplier email is required")
+    private String supplierEmail;
 }

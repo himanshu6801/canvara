@@ -4,7 +4,6 @@ import com.canvara.app.dto.response.FileUploadResponse;
 import com.canvara.app.service.StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,7 +26,6 @@ public class FileUploadController {
      * Returns 200 with { filename, url }
      */
     @PostMapping("/artwork")
-    @PreAuthorize("hasRole('SUPPLIER')")
     public ResponseEntity<FileUploadResponse> uploadArtworkImage(
             @RequestParam("file") MultipartFile file) {
 
