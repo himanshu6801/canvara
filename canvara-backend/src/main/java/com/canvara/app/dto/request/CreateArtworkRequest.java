@@ -2,10 +2,13 @@ package com.canvara.app.dto.request;
 
 import com.canvara.app.enums.Category;
 import com.canvara.app.enums.Medium;
+import com.canvara.app.enums.Style;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Set;
 
 @Data
 public class CreateArtworkRequest {
@@ -23,10 +26,13 @@ public class CreateArtworkRequest {
     private BigDecimal price;
 
     @NotNull(message = "Medium is required")
-    private Medium medium;
+    private Set<Medium> mediums;
 
     @NotNull(message = "Category is required")
-    private Category category;
+    private Set<Category> categories;
+
+    @NotNull(message = "styles is required")
+    private Set<Style> styles;
 
     @Size(max = 100, message = "Dimensions must not exceed 100 characters")
     private String dimensions;

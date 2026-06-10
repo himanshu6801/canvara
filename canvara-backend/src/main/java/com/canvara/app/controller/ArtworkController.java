@@ -7,6 +7,9 @@ import com.canvara.app.dto.request.UpdateArtworkRequest;
 import com.canvara.app.dto.response.ArtworkDetailResponse;
 import com.canvara.app.dto.response.ArtworkSummaryResponse;
 import com.canvara.app.enums.Category;
+import com.canvara.app.enums.Medium;
+import com.canvara.app.enums.Size;
+import com.canvara.app.enums.Style;
 import com.canvara.app.service.ArtworkService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/artworks")
@@ -38,13 +42,18 @@ public class ArtworkController {
      */
     @GetMapping
     public ResponseEntity<Page<ArtworkSummaryResponse>> getAll(
-            @RequestParam(required = false) String   keyword,
-            @RequestParam(required = false) String   status,
-            @RequestParam(required = false) Category category,
-            @PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC)
-            Pageable pageable) {
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Set<Category> categories,  // was: Category category
+            @RequestParam(required = false) Set<Medium>   mediums,     // new
+            @RequestParam(required = false) Set<Style>    styles,      // new
+            @RequestParam(required = false) Size  artSize,
+            @PageableDefault(size = 12, sort = "createdAt",
+                    direction = Sort.Direction.DESC) Pageable pageable) {
 
-        return ResponseEntity.ok(artworkService.getPublicArtworks(status, keyword, category, pageable));
+        return ResponseEntity.ok(
+                artworkService.getPublicArtworks(status, keyword, categories, mediums, styles, artSize, pageable)
+        );
     }
 
     /**

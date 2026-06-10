@@ -7,9 +7,7 @@ import com.canvara.app.dto.response.ArtworkDetailResponse;
 import com.canvara.app.dto.response.ArtworkSummaryResponse;
 import com.canvara.app.entity.Artwork;
 import com.canvara.app.entity.User;
-import com.canvara.app.enums.ArtworkStatus;
-import com.canvara.app.enums.Category;
-import com.canvara.app.enums.Medium;
+import com.canvara.app.enums.*;
 import com.canvara.app.exception.ResourceNotFoundException;
 import com.canvara.app.exception.UnauthorizedAccessException;
 import com.canvara.app.repository.ArtworkRepository;
@@ -21,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.canvara.app.util.EnumUtils.getEnumOrDefault;
@@ -38,11 +37,14 @@ public class ArtworkService {
 
     /** Paginated gallery: only AVAILABLE artworks, optional filters. */
     public Page<ArtworkSummaryResponse> getPublicArtworks(
-            String status, String keyword, Category category, Pageable pageable) {
+            String status, String keyword,
+            Set<Category> categories, Set<Medium> mediums,
+            Set<Style> styles, Size size,            // ADD sizes
+            Pageable pageable) {
 
         return artworkRepository
-            .findAllPublic(status, category, keyword, pageable)
-            .map(this::toSummary);
+                .findAllPublic(status, keyword, categories, mediums, styles, size, pageable)
+                .map(this::toSummary);
     }
 
     /** Single artwork detail — visible to anyone. */
@@ -79,8 +81,9 @@ public class ArtworkService {
             .title(req.getTitle())
             .description(req.getDescription())
             .price(req.getPrice())
-            .medium(req.getMedium().name())
-            .category(req.getCategory().name())
+            .mediums(req.getMediums())
+            .categories(req.getCategories())
+            .styles(req.getStyles())
             .dimensions(req.getDimensions())
             .imageFilename(req.getImageFilename())
             .status(ArtworkStatus.AVAILABLE.name())
@@ -98,8 +101,9 @@ public class ArtworkService {
         artwork.setTitle(req.getTitle());
         artwork.setDescription(req.getDescription());
         artwork.setPrice(req.getPrice());
-        artwork.setMedium(req.getMedium().name());
-        artwork.setCategory(req.getCategory().name());
+        artwork.setMediums(req.getMedium());
+        artwork.setCategories(req.getCategory());
+        artwork.setStyles(req.getStyles());
         artwork.setDimensions(req.getDimensions());
 
         return toDetail(artworkRepository.save(artwork), true);
@@ -146,22 +150,24 @@ public class ArtworkService {
         return userRepository.findByEmail(email)
             .orElseThrow(() -> new ResourceNotFoundException("User not found: " + email));
     }
-
     // ── Mapping ───────────────────────────────────────────────────────────
 
     private ArtworkSummaryResponse toSummary(Artwork a) {
         return ArtworkSummaryResponse.builder()
-            .id(a.getId())
-            .title(a.getTitle())
-            .price(a.getPrice())
-            .medium(getEnumOrDefault(Medium.class, a.getCategory(), Medium.OTHER))
-            .category(getEnumOrDefault(Category.class, a.getCategory(), Category.OTHER))
-            .dimensions(a.getDimensions())
-            .imageUrl(storageService.resolveUrl(a.getImageFilename()))
-            .status(getEnumOrDefault(ArtworkStatus.class, a.getCategory(), ArtworkStatus.AVAILABLE))
-            .supplierName(a.getSupplier().getFullName())
-            .createdAt(a.getCreatedAt())
-            .build();
+                .id(a.getId())
+                .title(a.getTitle())
+                .price(a.getPrice())
+                .categories(a.getCategories())   // was: .category(a.getCategory())
+                .mediums(a.getMediums())         // was: .medium(a.getMedium())
+                .styles(a.getStyles())
+                .size(a.getSize())
+                .dimensions(a.getDimensions())
+                .imageUrl(storageService.resolveUrl(a.getImageFilename()))
+                .status(getEnumOrDefault(ArtworkStatus.class, a.getStatus(), ArtworkStatus.AVAILABLE))
+                .supplierName(a.getSupplier().getFullName())
+                .supplierEmail(a.getSupplier().getEmail())
+                .createdAt(a.getCreatedAt())
+                .build();
     }
 
     private ArtworkDetailResponse toDetail(Artwork a, boolean includePendingCount) {
@@ -171,10 +177,14 @@ public class ArtworkService {
             .title(a.getTitle())
             .description(a.getDescription())
             .price(a.getPrice())
-            .medium(Medium.valueOf(a.getMedium()))
-            .category(Category.valueOf(a.getCategory()))
+            .medium(a.getMediums())
+            .category(a.getCategories())
+            .styles(a.getStyles())
             .dimensions(a.getDimensions())
             .imageUrl(storageService.resolveUrl(a.getImageFilename()))
+            .storyTitle(a.getStoryTitle())
+            .storyType(a.getStoryType())
+            .storyContent(a.getStoryContent())
             .status(ArtworkStatus.valueOf(a.getStatus()))
             .supplierId(a.getSupplier().getId())
             .supplierName(a.getSupplier().getFullName())

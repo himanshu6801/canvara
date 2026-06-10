@@ -27,15 +27,28 @@ export default function BrowsePage() {
   const [sort, setSort] = useState('newest');
   const [page, setPage] = useState(0);
 
+// REPLACE the entire buildQueryParams function:
   const buildQueryParams = useCallback(() => {
     const params = new URLSearchParams();
-    if (filters.search) params.set('search', filters.search);
-    if (filters.categories.length) params.set('categories', filters.categories.join(','));
-    if (filters.styles.length) params.set('styles', filters.styles.join(','));
-    if (filters.mediums.length) params.set('mediums', filters.mediums.join(','));
-    if (filters.sizes.length) params.set('sizes', filters.sizes.join(','));
+
+    if (filters.search)  params.set('keyword', filters.search); // 'search' → 'keyword'
+
+    // Repeat param for each value instead of joining with comma
+    filters.categories.forEach(v => params.append('categories', v));
+    filters.styles.forEach(v    => params.append('styles',     v));
+    filters.mediums.forEach(v   => params.append('mediums',    v));
+    filters.sizes.forEach(v     => params.append('sizes',      v));
+
+    // Map sort option to Spring's sort param format
+    const sortMap = {
+      newest:     'createdAt,desc',
+      price_asc:  'price,asc',
+      price_desc: 'price,desc',
+    };
+    params.set('sort', sortMap[sort] ?? 'createdAt,desc');
     params.set('page', page);
     params.set('size', 20);
+
     return params.toString();
   }, [filters, sort, page]);
 

@@ -1,14 +1,13 @@
 package com.canvara.app.dto.response;
 
-import com.canvara.app.enums.ArtworkStatus;
-import com.canvara.app.enums.Category;
-import com.canvara.app.enums.Medium;
+import com.canvara.app.enums.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 /**
  * Full DTO for the artwork detail page.
@@ -21,10 +20,15 @@ public class ArtworkDetailResponse {
     private String        title;
     private String        description;
     private BigDecimal    price;
-    private Medium        medium;
-    private Category      category;
+    private Set<Medium>   medium;
+    private Set<Category> category;
+    private Set<Style>    styles;
+    private Size          size;
     private String        dimensions;
     private String        imageUrl;
+    private String        storyTitle;
+    private String        storyType;
+    private String        storyContent;
     private ArtworkStatus status;
 
     // Supplier info (public-safe fields only)
