@@ -37,6 +37,7 @@ public class Artwork {
     @Column(length = 100)
     private String dimensions;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 50)
     private Size size;
 

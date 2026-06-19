@@ -128,6 +128,10 @@ public class ArtworkService {
     @Transactional
     public void delete(Long id, String supplierEmail) {
         Artwork artwork = findOwnedOrThrow(id, supplierEmail);
+
+        if (!artwork.getSupplier().getEmail().equals(supplierEmail)) {
+            throw new UnauthorizedAccessException("You do not own this artwork.");
+        }
         storageService.delete(artwork.getImageFilename());
         artworkRepository.delete(artwork);
     }
