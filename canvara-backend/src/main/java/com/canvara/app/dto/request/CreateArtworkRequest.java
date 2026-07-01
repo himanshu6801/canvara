@@ -25,13 +25,13 @@ public class CreateArtworkRequest {
     @Digits(integer = 8, fraction = 2, message = "Invalid price format")
     private BigDecimal price;
 
-    @NotNull(message = "Medium is required")
+//    @NotNull(message = "Medium is required")
     private Set<Medium> mediums;
 
-    @NotNull(message = "Category is required")
+//    @NotNull(message = "Category is required")
     private Set<Category> categories;
 
-    @NotNull(message = "styles is required")
+//    @NotNull(message = "styles is required")
     private Set<Style> styles;
 
     @Size(max = 100, message = "Dimensions must not exceed 100 characters")

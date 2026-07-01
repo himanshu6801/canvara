@@ -7,7 +7,6 @@ import org.springframework.web.servlet.config.annotation.*;
 import java.nio.file.Paths;
 
 @Configuration
-@EnableWebMvc
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Value("${canvara.upload.dir}")

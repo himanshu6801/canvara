@@ -6,22 +6,21 @@ services:
       dockerfile: Dockerfile
     container_name: canvara-backend
     ports:
-      - "8080:8080"
+      - "3001:8080"
     environment:
       # Database — point to your external MySQL (RDS, PlanetScale, etc.)
       SPRING_DATASOURCE_URL: ${DB_URL}
       SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
 
-      # JWT
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
-
       # File uploads
       UPLOAD_DIR: /app/uploads
 
+      # CORS Config
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+
       # Spring profile
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
     volumes:
       # Persist uploaded artwork images locally
       - artwork_uploads:/app/uploads
@@ -31,6 +30,23 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  canvara-ai:
+    build:
+      context: ./canvara-ai
+      dockerfile: Dockerfile
+    container_name: canvara-ai
+    ports:
+      - "8001:8000"
+    env_file:
+      - ./.env
+    environment:
+      BACKEND_URL: http://canvara-backend:8080
+      DATABASE_URL: ${DB_URL}
+      DATABASE_USER: ${DB_USERNAME}
+      DATABASE_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      - backend
 
   frontend:
     build:

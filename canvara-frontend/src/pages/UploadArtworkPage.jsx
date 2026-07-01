@@ -107,10 +107,7 @@ export default function UploadArtworkPage({ onBack, onNavigate }) {
 
       const res = await fetch(`${API_BASE}/api/upload/artwork`, {
         method: 'POST',
-        body: formData,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
+        body: formData
       });
 
       if (!res.ok) throw new Error('Upload failed');
