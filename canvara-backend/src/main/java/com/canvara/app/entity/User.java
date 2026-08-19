@@ -1,6 +1,5 @@
 package com.canvara.app.entity;
 
-import com.canvara.app.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -39,9 +38,6 @@ public class User {
     @Column(length = 300)
     private String profileImageUrl;
 
-    @Column
-    private String role;
-
     @Column(nullable = false)
     @Builder.Default
     private boolean active = true;
@@ -50,6 +46,10 @@ public class User {
     @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Artwork> artworks = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private Role role;
 
     @CreatedDate
     @Column(updatable = false)

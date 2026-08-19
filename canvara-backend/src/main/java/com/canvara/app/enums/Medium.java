@@ -8,5 +8,7 @@ public enum Medium {
     CHARCOAL,
     DIGITAL,
     MIXED_MEDIA,
+    PENCIL,
+    INK,
     OTHER
 }
