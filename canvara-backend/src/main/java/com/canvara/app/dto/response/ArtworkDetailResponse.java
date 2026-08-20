@@ -2,6 +2,7 @@ package com.canvara.app.dto.response;
 
 import com.canvara.app.enums.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,6 +16,7 @@ import java.util.Set;
  */
 @Data
 @Builder
+@Schema(description = "Full artwork detail, including supplier info and (for the owning supplier) pending request count")
 public class ArtworkDetailResponse {
     private Long          id;
     private String        title;
@@ -38,6 +40,7 @@ public class ArtworkDetailResponse {
     private String        supplierBio;
     private String        supplierProfileImageUrl;
 
+    @Schema(description = "Count of pending purchase requests; only meaningful when viewed by the owning supplier")
     private int           pendingRequestCount;   // visible to supplier only
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;

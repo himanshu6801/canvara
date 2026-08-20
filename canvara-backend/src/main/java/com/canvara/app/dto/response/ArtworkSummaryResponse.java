@@ -2,6 +2,7 @@ package com.canvara.app.dto.response;
 
 import com.canvara.app.enums.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,6 +16,7 @@ import java.util.Set;
  */
 @Data
 @Builder
+@Schema(description = "Lightweight artwork summary used in gallery/grid listings")
 public class ArtworkSummaryResponse {
     private Long          id;
     private String        title;
