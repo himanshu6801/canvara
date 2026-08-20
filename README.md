@@ -119,6 +119,98 @@ http://localhost:8000/docs
 
 ---
 
+## ☁️ Pushing Images to AWS ECR
+
+Each service's Docker image can be built locally, tagged for Amazon ECR, and pushed up — the same flow [`setup-infra.sh`](setup-infra.sh) uses when provisioning the ECS Fargate deployment.
+
+**This project's ECR registry:**
+
+| | |
+| --- | --- |
+| AWS Account ID | `318731644726` |
+| Region | `us-east-1` |
+| Registry URI | `318731644726.dkr.ecr.us-east-1.amazonaws.com` |
+| Repositories | `canvara-backend`, `canvara-ai`, `canvara-frontend` |
+
+Prerequisites:
+
+* AWS CLI installed and configured (`aws configure`) with credentials that have ECR push permissions
+* Docker running locally
+* The three ECR repositories already exist in the target account/region — `canvara-backend`, `canvara-ai`, `canvara-frontend` (one-time creation command below)
+
+### 1. Set account/region variables
+
+```bash
+export AWS_REGION=us-east-1
+export ACCOUNT_ID=318731644726   # or: $(aws sts get-caller-identity --query Account --output text)
+export PROJECT=canvara
+```
+
+### 2. (One-time) create the ECR repositories
+
+```bash
+aws ecr create-repository --repository-name ${PROJECT}-backend  --region "$AWS_REGION"
+aws ecr create-repository --repository-name ${PROJECT}-ai       --region "$AWS_REGION"
+aws ecr create-repository --repository-name ${PROJECT}-frontend --region "$AWS_REGION"
+```
+
+### 3. Point local Docker at ECR
+
+Logs the local Docker daemon into the account's ECR registry using a short-lived token from the AWS CLI (no long-lived Docker credentials stored anywhere):
+
+```bash
+aws ecr get-login-password --region "$AWS_REGION" | \
+  docker login --username AWS --password-stdin "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+```
+
+### 4. Build, tag, and push each image
+
+**Backend**
+
+```bash
+docker build -t ${PROJECT}-backend canvara-backend
+docker tag ${PROJECT}-backend:latest "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}-backend:latest"
+docker push "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}-backend:latest"
+```
+
+**AI service**
+
+```bash
+docker build -t ${PROJECT}-ai canvara-ai
+docker tag ${PROJECT}-ai:latest "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}-ai:latest"
+docker push "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}-ai:latest"
+```
+
+**Frontend**
+
+`VITE_API_BASE_URL=""` is intentional — the deployed frontend calls the API on the same origin it's served from (the load balancer), so no separate API base URL is baked into the static build.
+
+```bash
+docker build -t ${PROJECT}-frontend canvara-frontend --build-arg VITE_API_BASE_URL=""
+docker tag ${PROJECT}-frontend:latest "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}-frontend:latest"
+docker push "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}-frontend:latest"
+```
+
+Resolved (no variables), for copy-paste reference:
+
+```bash
+docker build -t canvara-backend  canvara-backend
+docker tag canvara-backend:latest  318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-backend:latest
+docker push 318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-backend:latest
+
+docker build -t canvara-ai       canvara-ai
+docker tag canvara-ai:latest       318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-ai:latest
+docker push 318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-ai:latest
+
+docker build -t canvara-frontend canvara-frontend --build-arg VITE_API_BASE_URL=""
+docker tag canvara-frontend:latest 318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-frontend:latest
+docker push 318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-frontend:latest
+```
+
+> Steps 3–4 (build → tag → push, all three services) run automatically as part of [`setup-infra.sh`](setup-infra.sh), which also stands up the VPC, ALB, RDS instance, and ECS services that pull these images.
+
+---
+
 ## 🤖 Canvara AI
 
 `canvara-ai` is a FastAPI microservice that adds an AI-powered chatbot to the Canvara marketplace. Users can search for artworks using plain English, and the service translates those queries into structured filters.
