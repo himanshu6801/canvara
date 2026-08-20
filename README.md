@@ -194,15 +194,15 @@ docker push "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}-fronte
 Resolved (no variables), for copy-paste reference:
 
 ```bash
-docker build -t canvara-backend  canvara-backend
+docker build -t canvara-backend  .
 docker tag canvara-backend:latest  318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-backend:latest
 docker push 318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-backend:latest
 
-docker build -t canvara-ai       canvara-ai
+docker build -t canvara-ai .
 docker tag canvara-ai:latest       318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-ai:latest
 docker push 318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-ai:latest
 
-docker build -t canvara-frontend canvara-frontend --build-arg VITE_API_BASE_URL=""
+docker build -t canvara-frontend . --build-arg VITE_API_BASE_URL=""
 docker tag canvara-frontend:latest 318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-frontend:latest
 docker push 318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-frontend:latest
 ```
