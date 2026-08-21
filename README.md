@@ -204,7 +204,7 @@ docker build --platform linux/arm64 -t canvara-ai .
 docker tag canvara-ai:latest       318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-ai:latest
 docker push 318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-ai:latest
 
-docker build --platform linux/arm64 -t canvara-frontend . --build-arg VITE_API_BASE_URL=""
+docker build --platform linux/arm64 -t canvara-frontend . --build-arg VITE_API_BASE_URL="docker build --build-arg VITE_API_BASE_URL=http://canvara-alb-1741736266.us-east-1.elb.amazonaws.com:8080"
 docker tag canvara-frontend:latest 318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-frontend:latest
 docker push 318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-frontend:latest
 ```
