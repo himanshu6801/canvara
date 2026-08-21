@@ -70,7 +70,7 @@ public class ArtworkController {
             @PageableDefault(size = 12, sort = "createdAt",
                     direction = Sort.Direction.DESC) Pageable pageable) {
 
-        log.info("GET /artworks - keyword={}, status={}, categories={}, mediums={}, styles={}, artSize={}, page={}",
+        log.info("GET /artworks  - keyword={}, status={}, categories={}, mediums={}, styles={}, artSize={}, page={}",
                 keyword, status, categories, mediums, styles, artSize, pageable);
         return ResponseEntity.ok(
                 artworkService.getPublicArtworks(status, keyword, categories, mediums, styles, artSize, pageable)
