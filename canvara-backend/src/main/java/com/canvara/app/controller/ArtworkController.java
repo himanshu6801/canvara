@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/artworks")
+@RequestMapping("/artworks")
 @RequiredArgsConstructor
 @Tag(name = "Artworks", description = "Browse, list, and manage artwork listings")
 public class ArtworkController {

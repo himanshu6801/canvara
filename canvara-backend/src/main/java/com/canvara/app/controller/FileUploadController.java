@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/upload")
+@RequestMapping("/upload")
 @RequiredArgsConstructor
 @Tag(name = "File Upload", description = "Upload images to be attached to artwork listings")
 public class FileUploadController {

@@ -165,10 +165,12 @@ aws ecr get-login-password --region "$AWS_REGION" | \
 
 ### 4. Build, tag, and push each image
 
+All three ECS task definitions are pinned to **ARM64** (Graviton, for the Fargate cost/perf savings), so every build below targets `linux/arm64` explicitly via `--platform`. Don't drop that flag — building without it uses your local Docker daemon's default platform, and pushing an `amd64` image to an ARM64 task definition makes the ECS task fail to start (`CannotPullContainerError` / exec-format error), not a clean error at build or push time. This is a non-issue on an Apple Silicon Mac (native `arm64` host), but matters on any Intel/amd64 build machine or CI runner.
+
 **Backend**
 
 ```bash
-docker build -t ${PROJECT}-backend canvara-backend
+docker build --platform linux/arm64 -t ${PROJECT}-backend canvara-backend
 docker tag ${PROJECT}-backend:latest "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}-backend:latest"
 docker push "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}-backend:latest"
 ```
@@ -176,7 +178,7 @@ docker push "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}-backen
 **AI service**
 
 ```bash
-docker build -t ${PROJECT}-ai canvara-ai
+docker build --platform linux/arm64 -t ${PROJECT}-ai canvara-ai
 docker tag ${PROJECT}-ai:latest "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}-ai:latest"
 docker push "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}-ai:latest"
 ```
@@ -186,7 +188,7 @@ docker push "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}-ai:lat
 `VITE_API_BASE_URL=""` is intentional — the deployed frontend calls the API on the same origin it's served from (the load balancer), so no separate API base URL is baked into the static build.
 
 ```bash
-docker build -t ${PROJECT}-frontend canvara-frontend --build-arg VITE_API_BASE_URL=""
+docker build --platform linux/arm64 -t ${PROJECT}-frontend canvara-frontend --build-arg VITE_API_BASE_URL=""
 docker tag ${PROJECT}-frontend:latest "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}-frontend:latest"
 docker push "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}-frontend:latest"
 ```
@@ -194,15 +196,15 @@ docker push "${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}-fronte
 Resolved (no variables), for copy-paste reference:
 
 ```bash
-docker build -t canvara-backend  .
+docker build --platform linux/arm64 -t canvara-backend  .
 docker tag canvara-backend:latest  318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-backend:latest
 docker push 318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-backend:latest
 
-docker build -t canvara-ai .
+docker build --platform linux/arm64 -t canvara-ai .
 docker tag canvara-ai:latest       318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-ai:latest
 docker push 318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-ai:latest
 
-docker build -t canvara-frontend . --build-arg VITE_API_BASE_URL=""
+docker build --platform linux/arm64 -t canvara-frontend . --build-arg VITE_API_BASE_URL=""
 docker tag canvara-frontend:latest 318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-frontend:latest
 docker push 318731644726.dkr.ecr.us-east-1.amazonaws.com/canvara-frontend:latest
 ```
