@@ -6,7 +6,7 @@
     "ecr_repo": "canvara-backend",
     "container_name": "canvara-backend",
     "task_family": "canvara-backend",
-    "ecs_service": "backend",
+    "ecs_service": "canvara-backend-service",
     "ecs_cluster": "canvara-cluster",
     "task_def_file": ".aws/backend-task-definition.json"
   },
@@ -28,7 +28,7 @@
     "ecr_repo": "canvara-frontend",
     "container_name": "canvara-frontend",
     "task_family": "canvara-frontend",
-    "ecs_service": "frontend",
+    "ecs_service": "canvara-frontend",
     "ecs_cluster": "canvara-cluster",
     "task_def_file": ".aws/frontend-task-definition.json"
   }
