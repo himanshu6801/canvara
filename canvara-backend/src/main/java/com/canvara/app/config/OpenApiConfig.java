@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
-import io.swagger.v3.oas.annotations.servers.Server;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -27,10 +26,7 @@ import org.springframework.context.annotation.Configuration;
         version = "0.0.1",
         description = "REST API for the Canvara art marketplace — browse, list, and manage artwork listings.",
         contact = @Contact(name = "Canvara", email = "himanshusharma6801@gmail.com")
-    ),
-    servers = {
-        @Server(url = "/", description = "Current environment")
-    }
+    )
 )
 @SecurityScheme(
     name = "bearerAuth",
