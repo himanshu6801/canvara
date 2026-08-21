@@ -1,6 +1,7 @@
 package com.canvara.app.exception;
 
 import com.canvara.app.dto.response.ApiErrorResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -13,31 +14,37 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleNotFound(ResourceNotFoundException ex) {
+        log.error("Not Found", ex);
         return build(HttpStatus.NOT_FOUND, "Not Found", ex.getMessage(), null);
     }
 
     @ExceptionHandler(UnauthorizedAccessException.class)
     public ResponseEntity<ApiErrorResponse> handleForbidden(UnauthorizedAccessException ex) {
+        log.error("Forbidden", ex);
         return build(HttpStatus.FORBIDDEN, "Forbidden", ex.getMessage(), null);
     }
 
     @ExceptionHandler(InvalidFileException.class)
     public ResponseEntity<ApiErrorResponse> handleInvalidFile(InvalidFileException ex) {
+        log.error("Invalid File Error", ex);
         return build(HttpStatus.BAD_REQUEST, "Invalid File", ex.getMessage(), null);
     }
 
     @ExceptionHandler(FileStorageException.class)
     public ResponseEntity<ApiErrorResponse> handleStorage(FileStorageException ex) {
+        log.error("File Storage Error", ex);
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Storage Error", ex.getMessage(), null);
     }
 
     // Bean validation errors (@Valid)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+        log.error("Invalid Argument error", ex);
         Map<String, String> fieldErrors = ex.getBindingResult()
             .getFieldErrors()
             .stream()
@@ -51,6 +58,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGeneral(Exception ex) {
+        log.error("Unknon Error", ex);
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "An unexpected error occurred", null);
     }
 
