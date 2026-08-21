@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -38,6 +39,7 @@ import java.util.Set;
 @RequestMapping("/artworks")
 @RequiredArgsConstructor
 @Tag(name = "Artworks", description = "Browse, list, and manage artwork listings")
+@Slf4j
 public class ArtworkController {
 
     private final ArtworkService artworkService;
@@ -68,6 +70,8 @@ public class ArtworkController {
             @PageableDefault(size = 12, sort = "createdAt",
                     direction = Sort.Direction.DESC) Pageable pageable) {
 
+        log.info("GET /artworks - keyword={}, status={}, categories={}, mediums={}, styles={}, artSize={}, page={}",
+                keyword, status, categories, mediums, styles, artSize, pageable);
         return ResponseEntity.ok(
                 artworkService.getPublicArtworks(status, keyword, categories, mediums, styles, artSize, pageable)
         );
@@ -86,6 +90,7 @@ public class ArtworkController {
     @GetMapping("/{id}")
     public ResponseEntity<ArtworkDetailResponse> getById(
             @Parameter(description = "Artwork ID") @PathVariable Long id) {
+        log.info("GET /artworks/{}", id);
         return ResponseEntity.ok(artworkService.getById(id));
     }
 
@@ -102,6 +107,7 @@ public class ArtworkController {
     @ApiResponse(responseCode = "200", description = "List of the supplier's artworks")
     @GetMapping("/my")
     public ResponseEntity<List<ArtworkSummaryResponse>> getMine(Principal principal) {
+        log.info("GET /artworks/my - supplier={}", principal.getName());
         return ResponseEntity.ok(artworkService.getMyArtworks(principal.getName()));
     }
 
@@ -125,6 +131,7 @@ public class ArtworkController {
     public ResponseEntity<ArtworkDetailResponse> getMyById(
             @Parameter(description = "Artwork ID") @PathVariable Long id, Principal principal) {
 
+        log.info("GET /artworks/my/{} - supplier={}", id, principal.getName());
         return ResponseEntity.ok(artworkService.getMyArtworkById(id, principal.getName()));
     }
 
@@ -147,6 +154,7 @@ public class ArtworkController {
     public ResponseEntity<ArtworkDetailResponse> create(
             @Valid @RequestBody CreateArtworkRequest req) {
 
+        log.info("POST /artworks - supplier={}", req.getSupplierEmail());
         ArtworkDetailResponse created = artworkService.create(req, req.getSupplierEmail());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -173,6 +181,7 @@ public class ArtworkController {
             @Parameter(description = "Artwork ID") @PathVariable Long id,
             @Valid @RequestBody UpdateArtworkRequest req) {
 
+        log.info("PUT /artworks/{} - supplier={}", id, req.getSupplierEmail());
         return ResponseEntity.ok(artworkService.update(id, req, req.getSupplierEmail()));
     }
 
@@ -200,6 +209,7 @@ public class ArtworkController {
             @Parameter(description = "Artwork ID") @PathVariable Long id,
             @Valid @RequestBody ArtworkStatusRequest req) {
 
+        log.info("PATCH /artworks/{}/status - supplier={}, newStatus={}", id, req.getSupplierEmail(), req.getStatus());
         return ResponseEntity.ok(artworkService.updateStatus(id, req, req.getSupplierEmail()));
     }
 
@@ -223,6 +233,7 @@ public class ArtworkController {
             @Parameter(description = "Artwork ID") @PathVariable Long id,
             @Valid @RequestBody ArtworkDeleteRequest artworkDeleteRequest) {
 
+        log.info("DELETE /artworks/{} - supplier={}", id, artworkDeleteRequest.getSupplierEmail());
         artworkService.delete(id, artworkDeleteRequest.getSupplierEmail());
         return ResponseEntity.noContent().build();
     }
