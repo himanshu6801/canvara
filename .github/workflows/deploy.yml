@@ -1,0 +1,126 @@
+name: Deploy to ECS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {} # manual "deploy all services" button in the Actions tab
+
+# id-token: write is the whole point — it's what lets GitHub mint the short-lived
+# OIDC token that gets exchanged for AWS credentials. No static AWS keys anywhere.
+permissions:
+  contents: read
+  id-token: write
+
+# A second push to main while a deploy is running queues behind it instead of
+# racing it — ECS rolling deployments don't compose well if two runs update
+# the same service at once.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  # ---------------------------------------------------------------------
+  # Only rebuild/redeploy the services whose directory actually changed.
+  # workflow_dispatch (manual run) always deploys all three.
+  # ---------------------------------------------------------------------
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      has-changes: ${{ steps.plan.outputs.has-changes }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # need the previous commit to diff against on push
+
+      - id: plan
+        run: |
+          set -euo pipefail
+          CONFIG=.github/deploy-services.json
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            MATRIX=$(jq -c '.' "$CONFIG")
+          else
+            BEFORE="${{ github.event.before }}"
+            # First push to a new branch (or force-push) has no valid "before" SHA
+            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+              BEFORE=$(git rev-parse HEAD~1)
+            fi
+            CHANGED_PATHS=$(git diff --name-only "$BEFORE" HEAD)
+            MATRIX=$(CHANGED_PATHS="$CHANGED_PATHS" jq -c '
+              [.[] as $svc | $svc | select(
+                ($ENV.CHANGED_PATHS | split("\n")) as $changed
+                | any($changed[]; startswith($svc.path + "/"))
+              )]
+            ' "$CONFIG")
+          fi
+
+          echo "Services to deploy: $(echo "$MATRIX" | jq -c '[.[].name]')"
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+          if [ "$(echo "$MATRIX" | jq 'length')" -gt 0 ]; then
+            echo "has-changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has-changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    needs: plan
+    if: needs.plan.outputs.has-changes == 'true'
+    runs-on: ubuntu-latest
+    # Gates this job behind the GitHub Environment the IAM trust policy is
+    # scoped to (see infra/aws/github-oidc-trust-policy.json). Required
+    # reviewer + branch restriction are configured under Settings > Environments.
+    environment: production
+    strategy:
+      matrix:
+        service: ${{ fromJSON(needs.plan.outputs.matrix) }}
+      fail-fast: false # a failed backend deploy shouldn't abort an in-flight frontend deploy
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: gha-deploy-${{ matrix.service.name }}-${{ github.run_id }}
+
+      - name: Log in to ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image
+        id: build
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          ECR_REPOSITORY: ${{ matrix.service.ecr_repo }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          docker build \
+            --build-arg VITE_API_BASE_URL="${{ vars.VITE_API_BASE_URL }}" \
+            -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" \
+            -f "${{ matrix.service.dockerfile }}" \
+            "${{ matrix.service.path }}"
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Render new ECS task definition
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ matrix.service.task_def_file }}
+          container-name: ${{ matrix.service.container_name }}
+          image: ${{ steps.build.outputs.image }}
+
+      - name: Deploy to ECS (rolling update)
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+          cluster: ${{ matrix.service.ecs_cluster }}
+          service: ${{ matrix.service.ecs_service }}
+          wait-for-service-stability: true
+          wait-for-minutes: 10

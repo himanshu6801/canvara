@@ -1,0 +1,35 @@
+[
+  {
+    "name": "backend",
+    "path": "canvara-backend",
+    "dockerfile": "canvara-backend/Dockerfile",
+    "ecr_repo": "canvara-backend",
+    "container_name": "canvara-backend",
+    "task_family": "canvara-backend",
+    "ecs_service": "backend",
+    "ecs_cluster": "canvara-cluster",
+    "task_def_file": ".aws/backend-task-definition.json"
+  },
+  {
+    "name": "ai",
+    "path": "canvara-ai",
+    "dockerfile": "canvara-ai/Dockerfile",
+    "ecr_repo": "canvara-ai",
+    "container_name": "canvara-ai",
+    "task_family": "canvara-ai",
+    "ecs_service": "canvara-ai",
+    "ecs_cluster": "canvara-cluster",
+    "task_def_file": ".aws/ai-task-definition.json"
+  },
+  {
+    "name": "frontend",
+    "path": "canvara-frontend",
+    "dockerfile": "canvara-frontend/Dockerfile",
+    "ecr_repo": "canvara-frontend",
+    "container_name": "canvara-frontend",
+    "task_family": "canvara-frontend",
+    "ecs_service": "frontend",
+    "ecs_cluster": "canvara-cluster",
+    "task_def_file": ".aws/frontend-task-definition.json"
+  }
+]
