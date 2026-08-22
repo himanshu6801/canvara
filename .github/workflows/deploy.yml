@@ -69,7 +69,10 @@ jobs:
   deploy:
     needs: plan
     if: needs.plan.outputs.has-changes == 'true'
-    runs-on: ubuntu-latest
+    # ECS task definitions are ARM64 (see .aws/*.json runtimePlatform) — build
+    # natively on an ARM64 runner rather than cross-compiling via QEMU on x86,
+    # which is both slower (emulated Maven/npm builds) and adds setup steps.
+    runs-on: ubuntu-24.04-arm
     # Gates this job behind the GitHub Environment the IAM trust policy is
     # scoped to (see infra/aws/github-oidc-trust-policy.json). Required
     # reviewer + branch restriction are configured under Settings > Environments.
