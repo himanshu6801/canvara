@@ -15,18 +15,18 @@ ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 COPY . .
 RUN npm run build
 
-# ── Stage 2: Serve with Nginx ──────────────────────────────────────
-FROM nginx:alpine
+# ── Stage 2: Serve static build ──────────────────────────────────
+# No nginx here — routing (ALB in AWS, a standalone nginx service in
+# local docker-compose) lives outside this image. This stage just
+# serves the built files, with SPA fallback so React Router works.
+FROM node:20-alpine AS runner
 
-# Remove default nginx static files
-RUN rm -rf /usr/share/nginx/html/*
+WORKDIR /app
+RUN npm install -g serve
 
-# Copy built React app
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Copy custom nginx config (handles React Router)
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dist ./dist
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+# -s enables SPA mode: unknown paths fall back to index.html
+CMD ["serve", "-s", "dist", "-l", "80"]

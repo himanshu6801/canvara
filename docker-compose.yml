@@ -51,12 +51,22 @@ services:
       context: ./canvara-frontend
       dockerfile: Dockerfile
       args:
-        # At build time, frontend proxies /api/* via nginx to backend container
-        # so we use the nginx proxy — no need to expose backend URL to browser
+        # At build time, the standalone nginx service proxies /api/* to the
+        # backend container, so we use relative paths — no need to expose
+        # the backend URL to the browser
         VITE_API_BASE_URL: ""
     container_name: canvara-frontend
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:alpine
+    container_name: canvara-nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
       - "80:80"
     depends_on:
+      - frontend
       - backend
 
